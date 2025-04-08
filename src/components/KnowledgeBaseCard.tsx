@@ -1,5 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface KnowledgeBaseCardProps {
   id: number;
@@ -7,20 +9,45 @@ interface KnowledgeBaseCardProps {
   source: string;
   tags: string[];
   onDelete: (id: number) => void;
+  onExpand?: (id: number) => void;
 }
 
-const KnowledgeBaseCard = ({ id, content, source, tags, onDelete }: KnowledgeBaseCardProps) => {
+const KnowledgeBaseCard = ({ id, content, source, tags, onDelete, onExpand }: KnowledgeBaseCardProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const handleExpand = () => {
+    setIsOpen(!isOpen);
+    if (onExpand && !isOpen) {
+      onExpand(id);
+    }
+  };
+  
   return (
-    <div className="equation-item flex flex-col">
+    <Collapsible 
+      open={isOpen} 
+      onOpenChange={setIsOpen}
+      className="equation-item flex flex-col bg-white/10 hover:bg-white/15 transition-colors duration-300 rounded-lg p-4 mb-3"
+    >
       <div className="flex justify-between items-start mb-2">
-        <div className="text-left whitespace-pre-wrap">{content}</div>
-        <button 
-          className="delete-button ml-3 shrink-0"
-          onClick={() => onDelete(id)}
-        >
-          Delete
-        </button>
+        <CollapsibleTrigger className="text-left whitespace-pre-wrap flex-1 cursor-pointer hover:text-quantum-accent transition-colors">
+          {content.split('\n')[0]}
+        </CollapsibleTrigger>
+        <div className="flex gap-2 ml-3 shrink-0">
+          <button 
+            className="delete-button"
+            onClick={() => onDelete(id)}
+          >
+            Delete
+          </button>
+        </div>
       </div>
+      
+      <CollapsibleContent>
+        <div className="text-left whitespace-pre-wrap mt-2 border-t border-white/20 pt-2">
+          {content.split('\n').slice(1).join('\n')}
+        </div>
+      </CollapsibleContent>
+      
       <div className="flex justify-between items-center text-xs text-white/60 mt-2">
         <div className="source">Source: {source}</div>
         <div className="tags flex gap-1">
@@ -31,7 +58,7 @@ const KnowledgeBaseCard = ({ id, content, source, tags, onDelete }: KnowledgeBas
           ))}
         </div>
       </div>
-    </div>
+    </Collapsible>
   );
 };
 

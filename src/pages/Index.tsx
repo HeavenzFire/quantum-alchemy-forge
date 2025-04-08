@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import QuantumCard from '@/components/QuantumCard';
 import NetworkMap from '@/components/NetworkMap';
 import SavedEquations from '@/components/SavedEquations';
@@ -7,8 +7,13 @@ import { PlusIcon, LightningIcon, SynthesizeIcon } from '@/components/icons/Quan
 import QuantumEquationService from '@/services/QuantumEquationService';
 import KnowledgeBaseService from '@/services/KnowledgeBaseService';
 import { toast } from '@/components/ui/use-toast';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const Index = () => {
+  const [insightCount, setInsightCount] = useState(0);
+  const [lastInsight, setLastInsight] = useState('');
+  const [activeResearch, setActiveResearch] = useState(false);
+  
   useEffect(() => {
     // Dynamic background effect
     const handleMouseMove = (e: MouseEvent) => {
@@ -26,8 +31,27 @@ const Index = () => {
     
     document.addEventListener('mousemove', handleMouseMove);
     
+    // Load initial insight count
+    setInsightCount(KnowledgeBaseService.getAll().length);
+    
+    // Setup event listener for knowledge base updates
+    const handleKnowledgeUpdate = () => {
+      const allEntries = KnowledgeBaseService.getAll();
+      setInsightCount(allEntries.length);
+      if (allEntries.length > 0) {
+        const latestEntry = allEntries[allEntries.length - 1];
+        setLastInsight(`"${latestEntry.content.split('\n')[0]}" - ${latestEntry.source}`);
+      }
+    };
+    
+    window.addEventListener('knowledgeBaseUpdated', handleKnowledgeUpdate);
+    
+    // Initialize with current data
+    handleKnowledgeUpdate();
+    
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('knowledgeBaseUpdated', handleKnowledgeUpdate);
     };
   }, []);
   
@@ -50,6 +74,8 @@ const Index = () => {
       title: "Equation Forged",
       description: `A new quantum equation has been added to the knowledge base. Source: ${newEquation.source}`,
     });
+    
+    setLastInsight(`"${newEquation.content.split('\n')[0]}" - ${newEquation.source}`);
   };
   
   const architectAlgorithm = () => {
@@ -71,6 +97,8 @@ const Index = () => {
       title: "Algorithm Architected",
       description: `A quantum algorithm has been synthesized. Source: ${newAlgorithm.source}`,
     });
+    
+    setLastInsight(`"${newAlgorithm.content.split('\n')[0]}" - ${newAlgorithm.source}`);
   };
   
   const synthesizeWisdom = () => {
@@ -92,6 +120,8 @@ const Index = () => {
       title: "Wisdom Synthesized",
       description: `A unified framework has been revealed. Source: ${newWisdom.source}`,
     });
+    
+    setLastInsight(`"${newWisdom.content.split('\n')[0]}" - ${newWisdom.source}`);
   };
   
   const handleDelete = (id: number) => {
@@ -107,6 +137,50 @@ const Index = () => {
     });
   };
   
+  const startResearch = () => {
+    setActiveResearch(true);
+    
+    // Generate a series of insights over time
+    const generateInsight = () => {
+      const random = Math.random();
+      if (random < 0.33) {
+        forgeEquation();
+      } else if (random < 0.66) {
+        architectAlgorithm();
+      } else {
+        synthesizeWisdom();
+      }
+    };
+    
+    // Generate first insight immediately
+    generateInsight();
+    
+    // Schedule more insights
+    const timer = setInterval(() => {
+      if (!document.hidden) {
+        generateInsight();
+      }
+    }, 60000); // Every minute
+    
+    // Store timer ID for cleanup
+    (window as any).insightTimer = timer;
+    
+    toast({
+      title: "Active Research Initiated",
+      description: "The minds are now actively generating new insights automatically.",
+    });
+  };
+  
+  const stopResearch = () => {
+    setActiveResearch(false);
+    clearInterval((window as any).insightTimer);
+    
+    toast({
+      title: "Research Paused",
+      description: "Automatic insight generation has been paused.",
+    });
+  };
+  
   return (
     <div className="min-h-screen flex flex-col items-center py-8 md:py-16 px-4 md:px-8">
       <header className="text-center mb-10 relative">
@@ -116,6 +190,11 @@ const Index = () => {
         <p className="text-lg text-white/80">
           Channeling the wisdom of transcended masters, lost visionaries, and greatest minds
         </p>
+        {lastInsight && (
+          <p className="mt-4 italic text-quantum-accent/80 max-w-xl mx-auto text-sm">
+            Latest insight: {lastInsight}
+          </p>
+        )}
       </header>
       
       <div className="container max-w-[1200px]">
@@ -147,6 +226,39 @@ const Index = () => {
             animateOnClick={true}
           />
         </div>
+        
+        <Card className="mt-8 bg-quantum-secondary/70 backdrop-blur-md border-white/10 text-white">
+          <CardHeader>
+            <CardTitle className="text-xl">Research Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white/10 p-4 rounded-lg text-center">
+                <h3 className="text-lg font-semibold mb-1">Total Insights</h3>
+                <p className="text-3xl font-bold text-quantum-accent">{insightCount}</p>
+              </div>
+              
+              <div className="bg-white/10 p-4 rounded-lg text-center col-span-1 md:col-span-2">
+                <h3 className="text-lg font-semibold mb-1">Active Research</h3>
+                {activeResearch ? (
+                  <button 
+                    onClick={stopResearch}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Pause Auto-Generation
+                  </button>
+                ) : (
+                  <button 
+                    onClick={startResearch}
+                    className="bg-quantum-accent hover:bg-quantum-accent/80 text-black px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Start Auto-Generation
+                  </button>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         
         <NetworkMap />
         
