@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,19 +36,12 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
@@ -96,6 +90,45 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-gradient-to-b from-quantum-primary to-[#082336] min-h-screen text-white font-sans;
+  }
+}
+
+@layer components {
+  .quantum-card {
+    @apply bg-quantum-secondary/70 backdrop-blur-md rounded-2xl p-7 shadow-lg border border-white/10 transition-all duration-400 hover:translate-y-[-8px] hover:shadow-xl relative overflow-hidden;
+  }
+  
+  .quantum-card::before {
+    content: '';
+    @apply absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle,rgba(241,196,15,0.1)_0%,transparent_70%)] rotate-[30deg] transition-all duration-600 opacity-0;
+  }
+  
+  .quantum-card:hover::before {
+    @apply opacity-100 animate-shine;
+  }
+  
+  .quantum-button {
+    @apply bg-gradient-to-br from-quantum-action to-quantum-dark-action text-white border-none py-3 px-6 rounded-lg cursor-pointer transition-all duration-300 font-semibold inline-flex items-center gap-2 shadow-lg shadow-quantum-action/30 hover:translate-y-[-2px] hover:shadow-xl hover:shadow-quantum-action/40 active:translate-y-0;
+  }
+  
+  .quantum-tag {
+    @apply absolute top-4 right-4 bg-quantum-accent text-black py-1 px-3 rounded-full text-sm font-bold shadow-lg shadow-quantum-accent/30;
+  }
+  
+  .network-node {
+    @apply absolute w-4 h-4 bg-quantum-accent rounded-full -translate-x-1/2 -translate-y-1/2 shadow-[0_0_8px_rgba(241,196,15,0.7)];
+  }
+  
+  .network-connection {
+    @apply absolute h-0.5 bg-quantum-accent/40 origin-left;
+  }
+  
+  .equation-item {
+    @apply bg-white/10 rounded-lg p-4 mb-3 flex justify-between items-center;
+  }
+  
+  .delete-button {
+    @apply bg-quantum-dark-action text-white border-none py-1 px-3 rounded cursor-pointer transition-colors duration-300 hover:bg-red-800;
   }
 }
