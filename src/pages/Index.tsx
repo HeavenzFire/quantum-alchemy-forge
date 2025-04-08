@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import QuantumCard from '@/components/QuantumCard';
 import NetworkMap from '@/components/NetworkMap';
 import SavedEquations from '@/components/SavedEquations';
@@ -8,6 +9,7 @@ import QuantumEquationService from '@/services/QuantumEquationService';
 import KnowledgeBaseService from '@/services/KnowledgeBaseService';
 import { toast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [insightCount, setInsightCount] = useState(0);
@@ -259,6 +261,14 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+        
+        <div className="mt-8 text-center">
+          <Link to="/great-minds">
+            <Button className="bg-white/10 hover:bg-white/20 text-white border border-white/20">
+              Explore 500 Greatest Minds in History
+            </Button>
+          </Link>
+        </div>
         
         <NetworkMap />
         
