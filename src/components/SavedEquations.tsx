@@ -5,6 +5,8 @@ import KnowledgeBaseCard from './KnowledgeBaseCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 interface SavedEquationsProps {
   onDelete: (id: number) => void;
@@ -16,6 +18,14 @@ const SavedEquations = ({ onDelete }: SavedEquationsProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTag, setFilterTag] = useState('');
   const [allTags, setAllTags] = useState<string[]>([]);
+  const [autoSave, setAutoSave] = useState(() => {
+    return localStorage.getItem('autoSaveEnabled') === 'true';
+  });
+  
+  useEffect(() => {
+    // Save auto-save setting to localStorage
+    localStorage.setItem('autoSaveEnabled', autoSave.toString());
+  }, [autoSave]);
   
   useEffect(() => {
     // Load knowledge base entries
@@ -52,10 +62,75 @@ const SavedEquations = ({ onDelete }: SavedEquationsProps) => {
     // Listen for updates to knowledge base
     window.addEventListener('knowledgeBaseUpdated', loadEntries);
     
+    // Set up auto-save listener
+    if (autoSave) {
+      window.addEventListener('equationsUpdated', handleAutoSave);
+    }
+    
     return () => {
       window.removeEventListener('knowledgeBaseUpdated', loadEntries);
+      window.removeEventListener('equationsUpdated', handleAutoSave);
     };
-  }, [activeCategory, searchTerm, filterTag]);
+  }, [activeCategory, searchTerm, filterTag, autoSave]);
+  
+  const handleAutoSave = () => {
+    // Get latest equation from old service
+    const oldEquations = JSON.parse(localStorage.getItem('savedEquations') || '[]');
+    if (oldEquations.length > 0) {
+      const latestEquation = oldEquations[oldEquations.length - 1];
+      
+      // Check if this equation is already in the knowledge base to avoid duplicates
+      // We'll use a simple content check
+      const existingEntries = KnowledgeBaseService.getAll();
+      const isDuplicate = existingEntries.some(entry => 
+        entry.content === latestEquation.content
+      );
+      
+      if (!isDuplicate) {
+        // Determine which category it might be
+        let category: 'equation' | 'algorithm' | 'wisdom' = 'equation';
+        const content = latestEquation.content.toLowerCase();
+        
+        if (content.includes('algorithm') || content.includes('step') || content.includes('procedure')) {
+          category = 'algorithm';
+        } else if (content.includes('framework') || content.includes('principle') || content.includes('synthesis')) {
+          category = 'wisdom';
+        }
+        
+        // Generate random source and tags based on category
+        let source = '';
+        let tags: string[] = [];
+        
+        switch (category) {
+          case 'equation':
+            source = 'Auto-saved Equation';
+            tags = ['auto-saved', 'equation'];
+            break;
+          case 'algorithm':
+            source = 'Auto-saved Algorithm';
+            tags = ['auto-saved', 'algorithm'];
+            break;
+          case 'wisdom':
+            source = 'Auto-saved Wisdom';
+            tags = ['auto-saved', 'wisdom'];
+            break;
+        }
+        
+        // Add to knowledge base
+        KnowledgeBaseService.add({
+          category,
+          content: latestEquation.content,
+          source,
+          tags
+        });
+        
+        toast({
+          title: "Auto-Saved to Knowledge Base",
+          description: `Entry has been categorized as: ${category}`,
+        });
+      }
+    }
+  };
   
   const handleDelete = (id: number) => {
     onDelete(id);
@@ -156,7 +231,7 @@ const SavedEquations = ({ onDelete }: SavedEquationsProps) => {
           />
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <select
             value={filterTag}
             onChange={(e) => setFilterTag(e.target.value)}
@@ -185,6 +260,17 @@ const SavedEquations = ({ onDelete }: SavedEquationsProps) => {
             Generate More
           </Button>
         </div>
+      </div>
+      
+      <div className="flex items-center space-x-2 mb-4 px-2 py-2 bg-white/5 rounded-lg">
+        <Switch 
+          id="autosave" 
+          checked={autoSave} 
+          onCheckedChange={setAutoSave} 
+        />
+        <Label htmlFor="autosave" className="text-white/80">
+          Auto-save new equations to knowledge base
+        </Label>
       </div>
       
       <div className="space-y-3">

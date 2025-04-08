@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Trash2 } from 'lucide-react';
 
 interface KnowledgeBaseCardProps {
   id: number;
@@ -33,12 +34,14 @@ const KnowledgeBaseCard = ({ id, content, source, tags, onDelete, onExpand }: Kn
           {content.split('\n')[0]}
         </CollapsibleTrigger>
         <div className="flex gap-2 ml-3 shrink-0">
-          <button 
-            className="delete-button"
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="h-8 w-8 text-red-400 hover:text-red-500 hover:bg-red-500/10"
             onClick={() => onDelete(id)}
           >
-            Delete
-          </button>
+            <Trash2 size={16} />
+          </Button>
         </div>
       </div>
       
