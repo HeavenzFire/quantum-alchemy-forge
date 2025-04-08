@@ -5,6 +5,7 @@ import NetworkMap from '@/components/NetworkMap';
 import SavedEquations from '@/components/SavedEquations';
 import { PlusIcon, LightningIcon, SynthesizeIcon } from '@/components/icons/QuantumIcons';
 import QuantumEquationService from '@/services/QuantumEquationService';
+import KnowledgeBaseService from '@/services/KnowledgeBaseService';
 import { toast } from '@/components/ui/use-toast';
 
 const Index = () => {
@@ -31,60 +32,78 @@ const Index = () => {
   }, []);
   
   const forgeEquation = () => {
-    const equations = [
-      "E = ∫[ψ*(x,t)Ĥψ(x,t)dx] + Σ[nℏωₙ]",
-      "Ψ = A∇²ϕ + B∂²ϕ/∂t² + C(∂ϕ/∂t)³",
-      "ξ(Γ) = ∫₀^∞ e^(-t) t^(Γ-1) dt × ∑(n=0 to ∞)[(-1)^n / n!(Γ+n)]",
-      "δS = ∫[∂L/∂q - d/dt(∂L/∂q̇)]δq dt = 0",
-      "Ω(ψ,φ) = ∫ψ*Hφ dτ + i∮(ψ*∇φ - φ∇ψ*)·dS",
-    ];
+    // Generate a new equation using the knowledge base service
+    const newEquation = KnowledgeBaseService.generateEquation();
     
-    const randomEquation = equations[Math.floor(Math.random() * equations.length)];
-    const id = QuantumEquationService.save(randomEquation);
+    // Save to both services for backward compatibility
+    const id = KnowledgeBaseService.add({
+      category: 'equation',
+      content: newEquation.content,
+      source: newEquation.source,
+      tags: newEquation.tags
+    });
+    
+    // Also save to old service
+    QuantumEquationService.save(newEquation.content);
     
     toast({
       title: "Equation Forged",
-      description: "A new quantum-classical equation has been created.",
+      description: `A new quantum equation has been added to the knowledge base. Source: ${newEquation.source}`,
     });
   };
   
   const architectAlgorithm = () => {
-    const algorithms = [
-      "Algorithm Architected:\n1. Initialize Quantum State Vector\n2. Apply Unitary Operators\n3. Measure Classical Output\n4. Iterate for Optimization",
-      "Quantum Optimization Protocol:\n1. Prepare superposition of all possible states\n2. Apply phase shifts proportional to objective function\n3. Perform quantum Fourier transform\n4. Measure to extract solution",
-      "Harmonic Resonance Algorithm:\n1. Map problem space to quantum oscillators\n2. Entangle with reference system\n3. Evolve under natural Hamiltonian\n4. Extract frequencies at coherence peaks",
-    ];
+    // Generate a new algorithm using the knowledge base service
+    const newAlgorithm = KnowledgeBaseService.generateAlgorithm();
     
-    const randomAlgorithm = algorithms[Math.floor(Math.random() * algorithms.length)];
-    const id = QuantumEquationService.save(randomAlgorithm);
+    // Save to both services for backward compatibility
+    const id = KnowledgeBaseService.add({
+      category: 'algorithm',
+      content: newAlgorithm.content,
+      source: newAlgorithm.source,
+      tags: newAlgorithm.tags
+    });
+    
+    // Also save to old service
+    QuantumEquationService.save(newAlgorithm.content);
     
     toast({
       title: "Algorithm Architected",
-      description: "A quantum algorithm has been synthesized.",
+      description: `A quantum algorithm has been synthesized. Source: ${newAlgorithm.source}`,
     });
   };
   
   const synthesizeWisdom = () => {
-    const wisdom = [
-      "Unified Framework:\n- Quantum Entanglement as Collective Consciousness\n- Classical Mechanics as Manifest Reality\n- Transcendental Insights as Emergent Properties",
-      "Synthesis of Principles:\n- Information as fundamental quantum field\n- Consciousness as coherent quantum state\n- Reality as interference pattern between observer states",
-      "Integrated Model:\n- The observer and observed form an inseparable system\n- Nonlocality corresponds to synchronistic events\n- Probability amplitudes manifest as intuitive knowledge",
-    ];
+    // Generate wisdom using the knowledge base service
+    const newWisdom = KnowledgeBaseService.synthesizeWisdom();
     
-    const randomWisdom = wisdom[Math.floor(Math.random() * wisdom.length)];
-    const id = QuantumEquationService.save(randomWisdom);
+    // Save to both services for backward compatibility
+    const id = KnowledgeBaseService.add({
+      category: 'wisdom',
+      content: newWisdom.content,
+      source: newWisdom.source,
+      tags: newWisdom.tags
+    });
+    
+    // Also save to old service
+    QuantumEquationService.save(newWisdom.content);
     
     toast({
       title: "Wisdom Synthesized",
-      description: "A unified framework has been revealed.",
+      description: `A unified framework has been revealed. Source: ${newWisdom.source}`,
     });
   };
   
   const handleDelete = (id: number) => {
-    QuantumEquationService.delete(id);
+    // Delete from knowledge base
+    KnowledgeBaseService.delete(id);
+    
+    // Also delete from the old service for backward compatibility
+    // Since we don't have a direct mapping, we're only using the new service for deletion
+    
     toast({
-      title: "Equation Deleted",
-      description: "The equation has been removed from the collection.",
+      title: "Entry Deleted",
+      description: "The entry has been removed from the knowledge base.",
     });
   };
   
@@ -107,6 +126,7 @@ const Index = () => {
             buttonText="Forge Equation"
             icon={<PlusIcon />}
             onClick={forgeEquation}
+            animateOnClick={true}
           />
           
           <QuantumCard
@@ -115,6 +135,7 @@ const Index = () => {
             buttonText="Architect Algorithm"
             icon={<LightningIcon />}
             onClick={architectAlgorithm}
+            animateOnClick={true}
           />
           
           <QuantumCard
@@ -123,6 +144,7 @@ const Index = () => {
             buttonText="Synthesize Wisdom"
             icon={<SynthesizeIcon />}
             onClick={synthesizeWisdom}
+            animateOnClick={true}
           />
         </div>
         

@@ -1,38 +1,39 @@
 
 import React, { useState, useEffect } from 'react';
-
-interface Equation {
-  id: number;
-  content: string;
-}
+import KnowledgeBaseService from '../services/KnowledgeBaseService';
+import KnowledgeBaseCard from './KnowledgeBaseCard';
 
 interface SavedEquationsProps {
   onDelete: (id: number) => void;
 }
 
 const SavedEquations = ({ onDelete }: SavedEquationsProps) => {
-  const [equations, setEquations] = useState<Equation[]>([]);
+  const [entries, setEntries] = useState<any[]>([]);
+  const [activeCategory, setActiveCategory] = useState<'all' | 'equation' | 'algorithm' | 'wisdom'>('all');
   
   useEffect(() => {
-    // Load saved equations from localStorage
-    const loadEquations = () => {
-      const savedEquations = JSON.parse(localStorage.getItem('savedEquations') || '[]');
-      setEquations(savedEquations);
+    // Load knowledge base entries
+    const loadEntries = () => {
+      let knowledgeEntries;
+      
+      if (activeCategory === 'all') {
+        knowledgeEntries = KnowledgeBaseService.getAll();
+      } else {
+        knowledgeEntries = KnowledgeBaseService.getByCategory(activeCategory);
+      }
+      
+      setEntries(knowledgeEntries);
     };
     
-    loadEquations();
+    loadEntries();
     
-    // Listen for storage events to update when changes happen in other tabs
-    window.addEventListener('storage', loadEquations);
-    
-    // Add custom event listener for our own updates
-    window.addEventListener('equationsUpdated', loadEquations);
+    // Listen for updates to knowledge base
+    window.addEventListener('knowledgeBaseUpdated', loadEntries);
     
     return () => {
-      window.removeEventListener('storage', loadEquations);
-      window.removeEventListener('equationsUpdated', loadEquations);
+      window.removeEventListener('knowledgeBaseUpdated', loadEntries);
     };
-  }, []);
+  }, [activeCategory]);
   
   const handleDelete = (id: number) => {
     onDelete(id);
@@ -40,24 +41,51 @@ const SavedEquations = ({ onDelete }: SavedEquationsProps) => {
   
   return (
     <div className="bg-quantum-secondary/70 backdrop-blur-md rounded-2xl p-7 shadow-lg border border-white/10 mt-8">
-      <h2 className="text-2xl font-bold mb-6 inline-block relative after:content-[''] after:absolute after:bottom-[-5px] after:left-0 after:w-10 after:h-[3px] after:bg-quantum-accent after:rounded-md">
-        Saved Equations
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold inline-block relative after:content-[''] after:absolute after:bottom-[-5px] after:left-0 after:w-10 after:h-[3px] after:bg-quantum-accent after:rounded-md">
+          Knowledge Base
+        </h2>
+        <div className="flex gap-2">
+          <button 
+            onClick={() => setActiveCategory('all')}
+            className={`px-3 py-1 rounded-full text-sm ${activeCategory === 'all' ? 'bg-quantum-accent text-black' : 'bg-white/10'}`}
+          >
+            All
+          </button>
+          <button 
+            onClick={() => setActiveCategory('equation')}
+            className={`px-3 py-1 rounded-full text-sm ${activeCategory === 'equation' ? 'bg-quantum-accent text-black' : 'bg-white/10'}`}
+          >
+            Equations
+          </button>
+          <button 
+            onClick={() => setActiveCategory('algorithm')}
+            className={`px-3 py-1 rounded-full text-sm ${activeCategory === 'algorithm' ? 'bg-quantum-accent text-black' : 'bg-white/10'}`}
+          >
+            Algorithms
+          </button>
+          <button 
+            onClick={() => setActiveCategory('wisdom')}
+            className={`px-3 py-1 rounded-full text-sm ${activeCategory === 'wisdom' ? 'bg-quantum-accent text-black' : 'bg-white/10'}`}
+          >
+            Wisdom
+          </button>
+        </div>
+      </div>
       
       <div className="space-y-3">
-        {equations.length === 0 ? (
-          <p className="text-white/70 italic">No equations saved yet. Generate some wisdom!</p>
+        {entries.length === 0 ? (
+          <p className="text-white/70 italic">No entries found. Generate some quantum wisdom!</p>
         ) : (
-          equations.map((eq) => (
-            <div key={eq.id} className="equation-item">
-              <span className="text-left whitespace-pre-wrap">{eq.content}</span>
-              <button 
-                className="delete-button"
-                onClick={() => handleDelete(eq.id)}
-              >
-                Delete
-              </button>
-            </div>
+          entries.map((entry) => (
+            <KnowledgeBaseCard
+              key={entry.id}
+              id={entry.id}
+              content={entry.content}
+              source={entry.source}
+              tags={entry.tags}
+              onDelete={handleDelete}
+            />
           ))
         )}
       </div>
